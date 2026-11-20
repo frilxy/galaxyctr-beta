@@ -53,7 +53,7 @@ class ApplyIquePatchTests(unittest.TestCase):
         self.assertTrue(overlay["LayoutData/Font.arc"][0].startswith(b"CRAR"))
         self.assertEqual(skipped, ["JpJapanese/LayoutData/HomeButton.arc"])
 
-    def test_digital_hearts_is_preferred_and_a_tree_can_be_chosen(self):
+    def test_only_the_ique_tree_is_applied(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             pack = root / "pack.zip"
@@ -64,15 +64,14 @@ class ApplyIquePatchTests(unittest.TestCase):
                     ("Digital Hearts", "LayoutData/TitleLogo.arc", empty_rarc() + b"\0" * 32),
                 ],
             )
-            self.assertEqual(apply_ique_patch.overlay_files(pack)[0], "Digital Hearts")
-            self.assertEqual(apply_ique_patch.overlay_files(pack, "iQue")[0], "iQue")
-            with self.assertRaises(ValueError):
-                apply_ique_patch.overlay_files(pack, "Missing")
+            files = apply_ique_patch.overlay_files(pack)
+            self.assertEqual(list(files), ["LayoutData/TitleLogo.arc"])
+            self.assertEqual(files["LayoutData/TitleLogo.arc"], empty_rarc())
 
-    def test_a_pack_without_a_known_tree_is_rejected(self):
+    def test_a_pack_without_the_ique_tree_is_rejected(self):
         with tempfile.TemporaryDirectory() as temporary:
             pack = Path(temporary) / "pack.zip"
-            make_pack(pack, [("Other", "LayoutData/TitleLogo.arc", empty_rarc())])
+            make_pack(pack, [("Digital Hearts", "LayoutData/TitleLogo.arc", empty_rarc())])
             with self.assertRaises(ValueError):
                 apply_ique_patch.overlay_files(pack)
 
@@ -86,8 +85,7 @@ class ApplyIquePatchTests(unittest.TestCase):
             out = root / "out/smg"
 
             with contextlib.redirect_stdout(io.StringIO()):
-                chosen, changes, skipped, written = apply_ique_patch.build(pack, base, out)
-            self.assertEqual(chosen, "iQue")
+                changes, skipped, written = apply_ique_patch.build(pack, base, out)
             self.assertEqual(sorted(change["file"] for change in changes), sorted(names))
             self.assertEqual(written, out.resolve())
             self.assertEqual(sorted(path.name for path in (out / "files/LayoutData").iterdir()),

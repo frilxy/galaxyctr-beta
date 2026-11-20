@@ -9,9 +9,8 @@ tree, and rebuilds the file cache (sdmc:/smg/cache).
     python3 tools/3ds/apply_ique_patch.py --patch SMG-CNzh11_5.zip \
         --base /path/to/smg --out /path/to/smg-cn
 
-The pack must hold <root>/iQue/files/... or <root>/Digital Hearts/files/...; the Digital
-Hearts tree is used when both are present, because it carries the corrected text, and --tree
-picks one by hand.
+The pack must hold <root>/iQue/files/..., the iQue tree. The packs in the wild also carry a
+Digital Hearts tree, which is a different fan revision; this tool reads only iQue.
 
 Only archives the converter can rewrite as RARC are applied. The Wii HOME Menu resources
 (HomeButton.arc, WiiRemoteStrapReplace.arc) are U8 archives, which the port does not read,
@@ -36,38 +35,28 @@ sys.path[:0] = [str(TOOLS / "builder"), str(TOOLS)]
 from build_files import Converter
 from convert_smg_files import PACK_MAGIC, PACK_UNPACKED, build_file_pack
 
-# Packs in the wild; the first that is present wins.
-TREES = ("Digital Hearts", "iQue")
+# The overlay's tree in a pack. Other trees in the same pack are not used.
+TREE = "iQue"
 
 
-def choose_tree(available, tree):
-    if tree is not None:
-        if tree not in available:
-            raise ValueError(f"The pack has no {tree} tree (it has: {', '.join(available) or 'none'})")
-        return tree
-    if not available:
-        raise ValueError(f"The pack has no {TREES[0]} or {TREES[1]} tree")
-    return available[0]
-
-
-def overlay_files(patch, tree=None):
+def overlay_files(patch):
     """The overlay's archives, as {path under files/: bytes}."""
     if patch.is_file():
         with ZipFile(patch) as archive:
             names = archive.namelist()
-            available = [name for name in TREES if any(f"{name}/files/" in n for n in names)]
-            chosen = choose_tree(available, tree)
-            marker = f"{chosen}/files/"
+            marker = f"{TREE}/files/"
             files = {}
             for name in names:
                 if name.endswith(".arc") and marker in name:
                     files[name.split(marker, 1)[1]] = archive.read(name)
-            return chosen, files
+            if not files:
+                raise ValueError(f"The pack has no {TREE}/files archive")
+            return files
 
-    available = [name for name in TREES if (patch / name / "files").is_dir()]
-    chosen = choose_tree(available, tree)
-    root = patch / chosen / "files"
-    return chosen, {path.relative_to(root).as_posix(): path.read_bytes() for path in sorted(root.rglob("*.arc"))}
+    root = patch / TREE / "files"
+    if not root.is_dir():
+        raise ValueError(f"The pack has no {TREE}/files folder")
+    return {path.relative_to(root).as_posix(): path.read_bytes() for path in sorted(root.rglob("*.arc"))}
 
 
 def convert_overlay(files):
@@ -114,7 +103,7 @@ def verify_cache(work, overlay):
         raise ValueError(f"Archives missing from the file cache: {', '.join(sorted(remaining))}")
 
 
-def build(patch, base, out, tree=None):
+def build(patch, base, out):
     """Writes a copy of the converted tree at `base` with the pack applied, at `out`."""
     version = base / "port/GameVersion.txt"
     if not version.is_file() or version.read_bytes() != b"RMGJ01":
@@ -125,7 +114,7 @@ def build(patch, base, out, tree=None):
     if out.is_relative_to(base.resolve()):
         raise ValueError("Choose an output outside the source tree")
 
-    chosen, files = overlay_files(patch, tree)
+    files = overlay_files(patch)
     overlay, skipped = convert_overlay(files)
     out.parent.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(prefix=".galaxyctr-localization-", dir=out.parent) as temporary:
@@ -153,7 +142,7 @@ def build(patch, base, out, tree=None):
         verify_cache(work, overlay)
         (work / "localization-manifest.json").write_text(
             json.dumps(
-                {"game_id": "RMGJ01", "pack_tree": chosen, "files": changes},
+                {"game_id": "RMGJ01", "pack_tree": TREE, "files": changes},
                 indent=2,
             )
             + "\n",
@@ -162,7 +151,7 @@ def build(patch, base, out, tree=None):
         if out.exists() or out.is_symlink():
             raise FileExistsError(f"Output already exists: {out}")
         work.rename(out)
-    return chosen, changes, skipped, out
+    return changes, skipped, out
 
 
 def main():
@@ -170,13 +159,12 @@ def main():
     parser.add_argument("--patch", type=Path, required=True, help="the pack: a ZIP or its extracted folder")
     parser.add_argument("--base", type=Path, required=True, help="a converted Japanese smg folder")
     parser.add_argument("--out", type=Path, required=True, help="where to write the localized smg folder")
-    parser.add_argument("--tree", choices=TREES, help="which tree of the pack to apply (default: the best present)")
     args = parser.parse_args()
     try:
-        chosen, changes, skipped, out = build(args.patch, args.base, args.out, args.tree)
+        changes, skipped, out = build(args.patch, args.base, args.out)
     except (BadZipFile, OSError, ValueError, KeyError) as error:
         parser.exit(1, f"{error}\n")
-    print(f"{chosen}: {len(changes)} archives applied, {len(skipped)} skipped (not RARC)")
+    print(f"{TREE}: {len(changes)} archives applied, {len(skipped)} skipped (not RARC)")
     for name in skipped:
         print(f"  skipped {name}")
     print(out)

@@ -8,15 +8,9 @@ could not find when a resource is missing ([`FileRipper.cpp`](../src/Game/System
 
 ## What a pack contains
 
-A pack is a Riivolution overlay for `RMGJ01`. Two trees exist in the packs in the wild:
-
-| Tree | Contents |
-|---|---|
-| `Digital Hearts` | the corrected text, plus the counters, the galaxy-select and the timed-level layouts |
-| `iQue` | the earlier text only |
-
-Both are the same kind of overlay: archives under `files/`, plus `sys/main.dol`, `opening.bnr`
-and the Wii HOME Menu resources, which the 3DS port does not use.
+A pack is a Riivolution overlay for `RMGJ01`: archives under `iQue/files/`, plus `sys/main.dol`,
+`opening.bnr` and the Wii HOME Menu resources, which the 3DS port does not use. Packs in the
+wild also ship a `Digital Hearts` tree, a different fan revision; this tool reads only `iQue`.
 
 ## Applying it
 
@@ -28,8 +22,7 @@ python3 tools/3ds/apply_ique_patch.py --patch SMG-CNzh11_5.zip \
 ```
 
 `--base` is the converted tree the builder made (the folder holding `files/`, `native/` and
-`port/`), and `--out` is a new folder; the source is left as it was. `--tree iQue` picks the
-earlier text when the pack has both.
+`port/`), and `--out` is a new folder; the source is left as it was.
 
 The tool converts every archive of the pack for the 3DS, writes them into the copy, rebuilds
 the file cache (`sdmc:/smg/cache`) and reads every applied archive back out of the cache. A
