@@ -9,8 +9,13 @@
 
 extern "C" {
 
-// The USA version ships English, French and Spanish text; other languages fall back to English.
 u8 SCGetLanguage(void) {
+    // The Japanese disc only ships Japanese assets.
+    if (rvlIsJapaneseRelease()) {
+        return SC_LANG_JAPANESE;
+    }
+
+    // The USA disc ships English, French and Spanish assets.
     switch (hostGetSystemLanguage()) {
     case HOST_LANGUAGE_FRENCH:
         return SC_LANG_FRENCH;

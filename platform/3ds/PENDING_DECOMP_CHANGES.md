@@ -27,6 +27,11 @@ Changes the 3DS port needs in `src/`, `include/` or `libs/`. They live only on t
   All fields after the eye pair use the packed MiiData offsets from libctru, including nose,
   mouth, mustache, beard, glasses and mole.
 
+- **The missing-file panic names the file on 3DS**: `FileRipper.cpp` `loadToMainRAM` passes the
+  requested path to `OSPanic` instead of the fixed message, so a bad install or a localization
+  overlay that leaves a resource out says which file it asked for. The non-3DS branch keeps the
+  original line number and message, and the Wii build stays identical.
+
 ## Temporary (remove once the sound archive is fully converted)
 
 - `src/JSystem/JAudio2/JAUSectionHeap.cpp` `isWaveLoaded`: returns true for a wave bank that
