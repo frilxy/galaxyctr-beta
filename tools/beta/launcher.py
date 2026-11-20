@@ -31,7 +31,7 @@ import zipfile
 from pathlib import Path
 
 LAUNCHER_VERSION = 1
-REPOSITORY = "Im-Monee/galaxyctr-beta"
+REPOSITORY = "frilxy/galaxyctr-beta"  # fork test build: updates come from this fork
 API = f"https://api.github.com/repos/{REPOSITORY}"
 FOLDER_NAME = "GalaxyCTR-Builder-files"
 
