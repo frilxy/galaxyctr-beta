@@ -46,3 +46,6 @@ compile_commands.json
 
 # Internal workspace for the 3DS port (plans, prompts, notes)
 /_workspace/
+
+# Converter logs, written next to the converter
+tools/3ds/conv_logs/
