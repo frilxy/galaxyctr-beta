@@ -159,6 +159,7 @@ runs it without one.
 | Threads, interrupts, timers (OS) | 3DS threads, with interrupts delivered at safe points |
 | Disc reads (DVD) | files on the SD card |
 | Saves (NAND) | files on the SD card (`sdmc:/smg/nand`) |
+| System settings (SC) | the console's language and 16:9, except on a Japanese disc, which always asks for Japanese assets ([`sc.cpp`](../platform/3ds/rvl/sc.cpp)) |
 | Wii Remote and Nunchuk (KPAD) | buttons, Circle Pad, touch screen |
 | Audio DSP | JAudio2 runs unchanged. The DSP's mixing is done in software on the game's own core ([`dsp.cpp`](../platform/3ds/rvl/dsp.cpp)). On the third core the sound broke up whenever the game was busy. |
 | Mii (RFL) | heads built from the console's own Mii data |

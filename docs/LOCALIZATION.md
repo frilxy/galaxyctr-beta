@@ -6,6 +6,16 @@ already has. The port itself only needed two changes for this: on a Japanese dis
 game for Japanese assets ([`sc.cpp`](../platform/3ds/rvl/sc.cpp)), and it names the file it
 could not find when a resource is missing ([`FileRipper.cpp`](../src/Game/System/FileRipper.cpp)).
 
+## Why the Japanese version
+
+The patch is a Riivolution overlay for `RMGJ01`: it replaces files under `JpJapanese/` and ships
+a Japanese `main.dol`, so it cannot be applied to the USA version. The port had to run the
+Japanese disc first, and that work is what this localization builds on: the builder recognises
+`RMGJ01`, the game data kept inside `main.dol` is read from the Japanese executable, and the
+language selection asks the game for Japanese assets ([`sc.cpp`](../platform/3ds/rvl/sc.cpp)).
+Without that last part the port asked for English, French or Spanish assets, which the Japanese
+disc does not ship, and stopped at startup with a missing file.
+
 ## What a pack contains
 
 A pack is a Riivolution overlay for `RMGJ01`: archives under `iQue/files/`, plus `sys/main.dol`,

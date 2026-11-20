@@ -10,7 +10,7 @@
 
 ---
 
-GalaxyCTR runs *Super Mario Galaxy* (USA) on the New 3DS family. It is built on the
+GalaxyCTR runs *Super Mario Galaxy* (USA and Japan) on the New 3DS family. It is built on the
 [Petari](https://github.com/SMGCommunity/Petari) decompilation, so the game's own code runs on
 the 3DS. It is not an emulator.
 
@@ -47,6 +47,14 @@ The game is a **public beta**. It targets 30 FPS, and the busiest areas still ru
 5. Install `cias/GalaxyCTR.cia` with FBI.
 
 Your saves are kept every time you run the builder.
+
+## Japanese Version and Chinese Text
+
+The port runs the Japanese disc (`RMGJ01`) as well as the USA one. That support is also what
+makes the Chinese localization possible: the text comes from a fan patch for the Japanese disc
+that is built on the iQue Chinese release, and the patch is applied to the Japanese game files.
+Without a working Japanese version there would be nothing for the patch to replace. What the
+patch contains and how to apply it: [docs/LOCALIZATION.md](docs/LOCALIZATION.md).
 
 ## How to Update
 
